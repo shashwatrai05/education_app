@@ -21,7 +21,6 @@ class FirestoreService {
     await _db.collection('users').doc(user.id).set(user.toMap());
   }
 
-
   // Update User Name
   Future<void> updateUserName(String userId, String newName) async {
     await _db.collection('users').doc(userId).update({'name': newName});
@@ -58,7 +57,7 @@ class FirestoreService {
     await _db.collection('users').doc(userId).update({'achievements': newAchievements});
   }
 
-
+  // Get All Courses
   Future<List<Course>> getCourses() async {
     final snapshot = await _db.collection('courses').get();
     return snapshot.docs.map((doc) => Course.fromMap(doc.data(), doc.id)).toList();
@@ -104,5 +103,26 @@ class FirestoreService {
         .toList();
 
     return recommendedCourses;
+  }
+
+  // Get User Enrolled Courses
+  Future<List<Course>> getUserEnrolledCourses(List<String> courseIds) async {
+    if (courseIds.isEmpty) return [];
+    
+    List<Course> courses = [];
+    
+    // Fetch each course by its ID
+    for (String courseId in courseIds) {
+      try {
+        final doc = await _db.collection('courses').doc(courseId).get();
+        if (doc.exists) {
+          courses.add(Course.fromMap(doc.data()!, doc.id));
+        }
+      } catch (e) {
+        print("Error fetching course $courseId: $e");
+      }
+    }
+    
+    return courses;
   }
 }
